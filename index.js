@@ -28,6 +28,12 @@ const API = (() => {
 
   const deleteFromCart = (id) => {
     // define your method to delete an item in cart
+    return fetch(
+      `http://localhost:3000/cart/${id}`,
+       { 
+        method: "DELETE",
+      }
+    ).then((res) => res.json());
   };
 
   const checkout = () => {
@@ -101,7 +107,7 @@ const View = (() => {
   // implement your logic for View
   const inventoryEl = document.querySelector(".inventory-item");
   const cartEl = document.querySelector(".cart-item");
-
+  const checkoutEl = document.querySelector(".checkout-btn");
   const renderInventory = (inventory) => {
     let inventoryList = "";
     inventory.forEach((item)=>{
@@ -122,7 +128,7 @@ const View = (() => {
     cartEl.innerHTML = cartList;
   }
 
-  return {renderInventory, renderCarts, inventoryEl};
+  return {renderInventory, renderCarts, inventoryEl, cartEl, checkoutEl};
 })();
 
 const Controller = ((view, model) => {
@@ -195,6 +201,11 @@ const Controller = ((view, model) => {
   };
 
   const handleCheckout = () => {
+    view.checkoutEl.addEventListener("click", (event) => {
+      const element = event.target;
+      const itemId = Number(element.parentElement.getAttribute("id"))+1;
+      model.deleteFromCart(itemId);
+    })
   };
   const bootstrap = () => {
     init();
@@ -205,6 +216,7 @@ const Controller = ((view, model) => {
     handleUpdateAmount();
     handleAddToCart();
     handleDelete();
+    handleCheckout();
   };
   return {
     bootstrap,
