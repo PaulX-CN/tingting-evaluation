@@ -23,7 +23,16 @@ const API = (() => {
   };
 
   const updateCart = (id, newAmount) => {
+
     // define your method to update an item in cart
+    return fetch(
+      `http://localhost:3000/cart/${id}`,
+       { 
+        method: "PATCH",
+        headers: {"Content-Type": "application/json",},
+        body: JSON.stringify({id: id, count: newAmount})
+      }
+    ).then((res) => res.json());
   };
 
   const deleteFromCart = (id) => {
@@ -174,19 +183,22 @@ const Controller = ((view, model) => {
       if(element.className == "cart") {
         const count = state.inventory[itemId-1].count;
         const previousItem = state.cart.find((item) => (item.id == itemId))
-        let newCount;
         if (previousItem === undefined) {
-          newCount = count
+          model.addToCart({
+            ...state.inventory[itemId-1],
+            count: count,
+          }).then((data) => {
+            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data]
+          })
         } else {
-          newCount = previousItem.count + count;
+          model.updateCart(
+            itemId,
+            previousItem.count + count,
+          ).then((data) => {
+            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data]
+          })
         }
-        model.deleteFromCart(itemId);
-        model.addToCart({
-          ...state.inventory[itemId-1],
-          count: newCount
-        }).then((data) => {
-          state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data]
-        })
+        
       }
     })
   };
