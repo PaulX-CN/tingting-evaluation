@@ -180,6 +180,7 @@ const Controller = ((view, model) => {
         } else {
           newCount = previousItem.count + count;
         }
+        model.deleteFromCart(itemId);
         model.addToCart({
           ...state.inventory[itemId-1],
           count: newCount
@@ -203,8 +204,8 @@ const Controller = ((view, model) => {
 
   const handleCheckout = () => {
     view.checkoutEl.addEventListener("click", (event) => {
-      const element = event.target;
-      const itemId = Number(element.parentElement.getAttribute("id"));
+      event.preventDefault();
+      model.checkout().then(()=>{state.cart=[]})
     })
   };
   const bootstrap = () => {
