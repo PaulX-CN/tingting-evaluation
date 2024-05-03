@@ -122,7 +122,7 @@ const View = (() => {
   const renderCarts = (cartItems) => {
     let cartList = "";
     cartItems.forEach((item)=>{
-      const cartItem = `<li><span>${item.content} x ${item.count}</span><button class="delete">delete</button></li>`;
+      const cartItem = `<li id=${item.id}><span>${item.content} x ${item.count}</span><button class="delete">delete</button></li>`;
       cartList+=cartItem;
     })
     cartEl.innerHTML = cartList;
@@ -193,8 +193,9 @@ const Controller = ((view, model) => {
   const handleDelete = () => {
     view.cartEl.addEventListener("click", (event)=>{
       const element = event.target;
-      const itemId = Number(element.parentElement.getAttribute("id"));
+      const itemId = element.parentElement.getAttribute("id");
       if(element.className == "delete") {
+        model.deleteFromCart(itemId);
         state.cart = state.cart.filter((item)=>(item.id === itemId));
       }
     })
@@ -203,8 +204,7 @@ const Controller = ((view, model) => {
   const handleCheckout = () => {
     view.checkoutEl.addEventListener("click", (event) => {
       const element = event.target;
-      const itemId = Number(element.parentElement.getAttribute("id"))+1;
-      model.deleteFromCart(itemId);
+      const itemId = Number(element.parentElement.getAttribute("id"));
     })
   };
   const bootstrap = () => {
