@@ -121,7 +121,7 @@ const View = (() => {
     let inventoryList = "";
     inventory.forEach((item)=>{
       let count = item.count === undefined ? 0 : item.count;
-      const listItem = `<li id=${item.id}><span>${item.content}</span><button class="updateAmount">-</button>${count}<button class="updateAmount">+</button><button class="cart">add to cart</button></li>`;
+      const listItem = `<li id=${item.id}><span>${item.content}</span><button class="updateAmount minus">-</button>${count}<button class="updateAmount plus">+</button><button class="cart">add to cart</button></li>`;
       inventoryList+=listItem;
     })
     inventoryEl.innerHTML = inventoryList;
@@ -156,7 +156,7 @@ const Controller = ((view, model) => {
     view.inventoryEl.addEventListener("click", (event) => {
       event.preventDefault();
       const element = event.target;
-      if (element.className === "updateAmount") {
+      console.log(element.innerText)
         const content = element.innerText;
         const itemId = Number(element.parentElement.getAttribute("id"));
         const inventory = state.inventory;
@@ -171,7 +171,6 @@ const Controller = ((view, model) => {
           inventory[itemId-1].count = previousCount + 1;
           state.inventory = inventory;
         }
-      }
     });
   };
 
@@ -181,22 +180,32 @@ const Controller = ((view, model) => {
       const element = event.target;
       const itemId = Number(element.parentElement.getAttribute("id"));
       if(element.className == "cart") {
-        const count = state.inventory[itemId-1].count;
-        const previousItem = state.cart.find((item) => (item.id == itemId))
+        const count = state.inventory[itemId-1].count == undefined? 0 : state.inventory[itemId-1].count;
+        const previousItem = state.cart.find((item) => (item.id == itemId));
+        if(count == 0) {
+          return;
+        }
         if (previousItem === undefined) {
           model.addToCart({
             ...state.inventory[itemId-1],
             count: count,
           }).then((data) => {
-            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data]
+            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data];
+            model.getCart().then((data) => {
+              state.cart = data;
+            })
           })
         } else {
           model.updateCart(
             itemId,
             previousItem.count + count,
           ).then((data) => {
-            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data]
+            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data];
+            model.getCart().then((data) => {
+              state.cart = data;
+            })
           })
+          
         }
         
       }
@@ -208,9 +217,13 @@ const Controller = ((view, model) => {
       const element = event.target;
       const itemId = element.parentElement.getAttribute("id");
       if(element.className == "delete") {
-        model.deleteFromCart(itemId);
-        state.cart = state.cart.filter((item)=>(item.id === itemId));
+        model.deleteFromCart(itemId).then(()=>{
+          model.getCart().then((data) => {
+            state.cart = data;
+          })
+        });
       }
+      
     })
   };
 
