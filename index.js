@@ -20,8 +20,7 @@ const API = (() => {
         body: JSON.stringify(inventoryItem)
       }
     ).then((res) => res.json());
-  };
-
+  }
   const updateCart = (id, newAmount) => {
 
     // define your method to update an item in cart
@@ -120,8 +119,8 @@ const View = (() => {
   const renderInventory = (inventory) => {
     let inventoryList = "";
     inventory.forEach((item)=>{
-      let count = item.count === undefined ? 0 : item.count;
-      const listItem = `<li id=${item.id}><span>${item.content}</span><button class="updateAmount minus">-</button>${count}<button class="updateAmount plus">+</button><button class="cart">add to cart</button></li>`;
+      let count = item.count??0;
+      const listItem = `<li id="inventory-${item.id}"><span>${item.content}</span><button class="updateAmount minus">-</button>${count}<button class="updateAmount plus">+</button><button class="cart">add to cart</button></li>`;
       inventoryList+=listItem;
     })
     inventoryEl.innerHTML = inventoryList;
@@ -154,31 +153,29 @@ const Controller = ((view, model) => {
   };
   const handleUpdateAmount = () => {
     view.inventoryEl.addEventListener("click", (event) => {
-      event.preventDefault();
+      // event.preventDefault();
       const element = event.target;
-      console.log(element.innerText)
         const content = element.innerText;
-        const itemId = Number(element.parentElement.getAttribute("id"));
+        const itemId = Number(element.parentElement.getAttribute("id").split("-")[1]);
         const inventory = state.inventory;
         if(content == "-") {
           const previousCount = inventory[itemId-1].count == undefined ? 0 : inventory[itemId-1].count;
           if (previousCount >= 1) {
             inventory[itemId-1].count --
           }
-          state.inventory = inventory;
         } else if (content == "+") {
           const previousCount = inventory[itemId-1].count == undefined ? 0 : inventory[itemId-1].count;
           inventory[itemId-1].count = previousCount + 1;
-          state.inventory = inventory;
         }
+        state.inventory = inventory;
     });
   };
 
   const handleAddToCart = () => {
     view.inventoryEl.addEventListener("click", (event) => {
-      event.preventDefault();
+      // event.preventDefault();
       const element = event.target;
-      const itemId = Number(element.parentElement.getAttribute("id"));
+      const itemId = Number(element.parentElement.getAttribute("id").split("-")[1]);
       if(element.className == "cart") {
         const count = state.inventory[itemId-1].count == undefined? 0 : state.inventory[itemId-1].count;
         const previousItem = state.cart.find((item) => (item.id == itemId));
@@ -189,21 +186,19 @@ const Controller = ((view, model) => {
           model.addToCart({
             ...state.inventory[itemId-1],
             count: count,
-          }).then((data) => {
-            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data];
-            model.getCart().then((data) => {
-              state.cart = data;
-            })
-          })
+          }).then(() => {
+            // state.cart = [data];
+            return model.getCart();
+          }).then((data) => state.cart = data);
         } else {
           model.updateCart(
             itemId,
             previousItem.count + count,
           ).then((data) => {
-            state.cart = [...state.cart.filter((item) => (item.id !== item.id)), data];
+            // state.cart = state.cart.map((item) => (item.id !== item.id));
             model.getCart().then((data) => {
               state.cart = data;
-            })
+            });
           })
           
         }
