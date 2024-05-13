@@ -10,6 +10,18 @@
     {
       "content": "peach",
       "id": 2
+    },
+    {
+      "content": "pear",
+      "id": 3
+    },
+    {
+      "content": "cherry",
+      "id": 4
+    },
+    {
+      "content": "berry",
+      "id": 5
     }
   ]
 }
